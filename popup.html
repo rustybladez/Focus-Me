@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pomodoro Tab</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300&display=swap');
+
+    :root {
+      --bg:       #1a1410;
+      --surface:  #231d17;
+      --border:   #3a2f24;
+      --accent:   #e8623a;
+      --accent2:  #f0a87a;
+      --text:     #f2ede8;
+      --muted:    #8a7c6e;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 260px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      padding: 24px 20px 20px;
+      overflow: hidden;
+    }
+
+    /* Decorative top bar */
+    .top-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    .dot:nth-child(1) { background: #e05a4a; }
+    .dot:nth-child(2) { background: #e0b44a; }
+    .dot:nth-child(3) { background: #4aad6e; }
+
+    /* Tomato icon */
+    .icon-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 14px;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-4px); }
+    }
+    .tomato {
+      font-size: 36px;
+      line-height: 1;
+      filter: drop-shadow(0 4px 12px rgba(232, 98, 58, 0.45));
+    }
+
+    /* Title */
+    h1 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 300;
+      font-style: italic;
+      font-size: 22px;
+      text-align: center;
+      letter-spacing: 0.01em;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    h1 span {
+      color: var(--accent);
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 14px 0;
+    }
+
+    /* Status line */
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+    }
+    #status {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #4aad6e;
+      transition: opacity 0.4s ease;
+      flex-shrink: 0;
+    }
+    .status-text {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* Footer tag */
+    .tag {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 10px;
+      color: var(--border);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+
+  <div class="icon-wrap">
+    <span class="tomato">🍅</span>
+  </div>
+
+  <h1>Pomodoro <span>Tab</span></h1>
+
+  <div class="divider"></div>
+
+  <div class="status-row">
+    <div id="status"></div>
+    <span class="status-text">Extension loaded successfully</span>
+  </div>
+
+  <p class="tag">Focus · Rest · Repeat</p>
+
+  <script src="popup.js"></script>
+</body>
+</html>
