@@ -11,12 +11,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 800);
 
   // ── DOM refs ────────────────────────────────────────────────────────
-  const display       = document.getElementById("timer-display");
-  const sessionLabel  = document.getElementById("session-label");
-  const progressBar   = document.getElementById("progress-bar");
-  const btnStart      = document.getElementById("btn-start");
-  const btnReset      = document.getElementById("btn-reset");
-  const statusText    = document.getElementById("status-text");
+  const display          = document.getElementById("timer-display");
+  const sessionLabel     = document.getElementById("session-label");
+  const progressBar      = document.getElementById("progress-bar");
+  const btnStart         = document.getElementById("btn-start");
+  const btnReset         = document.getElementById("btn-reset");
+  const statusText       = document.getElementById("status-text");
+  const hardModeCheckbox = document.getElementById("hard-mode-checkbox");
 
   // ── Helpers ─────────────────────────────────────────────────────────
   function pad(n) { return String(n).padStart(2, "0"); }
@@ -36,7 +37,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     sessionLabel.textContent = isBreak ? "Break Session" : "Work Session";
 
-    btnStart.textContent = state.running ? "Pause" : (state.remaining < state.total ? "Resume" : "Start");
+    btnStart.textContent = state.running
+      ? "Pause"
+      : (state.remaining < state.total ? "Resume" : "Start");
 
     if (!state.running && state.remaining === state.total) {
       statusText.textContent = "Ready";
@@ -45,24 +48,46 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       statusText.textContent = "Paused";
     }
+
+    // Sync hard mode toggle if state carries it (GET_STATE response)
+    if (typeof state.hardMode === "boolean") {
+      hardModeCheckbox.checked = state.hardMode;
+    }
   }
 
   // ── Send command to background, re-render with returned state ───────
-  function send(type) {
-    chrome.runtime.sendMessage({ type }, (state) => {
+  function send(type, extra = {}) {
+    chrome.runtime.sendMessage({ type, ...extra }, (state) => {
       if (state) render(state);
     });
   }
 
   // ── Button listeners ─────────────────────────────────────────────────
   btnStart.addEventListener("click", () => {
-    // Ask background for current state to decide start vs pause
     chrome.runtime.sendMessage({ type: "GET_STATE" }, (state) => {
-      send(state.running ? "PAUSE" : "START");
+      if (state.running) {
+        send("PAUSE");
+      } else {
+        // FIX: query the active tab HERE in popup context.
+        // The service worker has no "current window", so querying from there
+        // always returns an empty array — the root cause of the bug.
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          const tabId = tabs[0]?.id ?? null;
+          send("START", { tabId });
+        });
+      }
     });
   });
 
   btnReset.addEventListener("click", () => send("RESET"));
+
+  // ── Hard Mode toggle ─────────────────────────────────────────────────
+  hardModeCheckbox.addEventListener("change", () => {
+    chrome.runtime.sendMessage({
+      type: "SET_HARD_MODE",
+      value: hardModeCheckbox.checked,
+    });
+  });
 
   // ── Live updates while popup is open ─────────────────────────────────
   chrome.runtime.onMessage.addListener((msg) => {
